@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>AHHADLE 로그인 연결 중</title>
+  <script>
+    // Slack OAuth는 https Redirect URL만 허용하므로, 이 페이지가 Slack 응답을 사내 http 서버로 그대로 넘긴다.
+    // 이동할 주소는 고정이며 code/state/error 외의 값은 전달하지 않는다.
+    (function () {
+      var TARGET = "http://172.16.0.210:4173/api/slack/oauth/callback";
+      var incoming = new URLSearchParams(window.location.search);
+      var forwarded = new URLSearchParams();
+      ["code", "state", "error"].forEach(function (key) {
+        if (incoming.has(key)) forwarded.set(key, incoming.get(key));
+      });
+      var query = forwarded.toString();
+      if (!query) return;
+      var url = TARGET + "?" + query;
+      window.__ahhadleRelayUrl = url;
+      window.location.replace(url);
+    })();
+  </script>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; color: #1f2a28; background: #f6f7f5; }
+    main { padding: 24px; text-align: center; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>AHHADLE로 돌아가는 중입니다…</p>
+    <p id="manual" hidden>자동으로 이동하지 않으면 <a id="manual-link" href="#">여기</a>를 눌러 주세요.</p>
+  </main>
+  <script>
+    if (window.__ahhadleRelayUrl) {
+      document.getElementById("manual-link").href = window.__ahhadleRelayUrl;
+      document.getElementById("manual").hidden = false;
+    }
+  </script>
+</body>
+</html>
